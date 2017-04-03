@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>921</width>
+    <height>621</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <layout class="QHBoxLayout" name="matplot_buttons_hlayout">
+      <item>
+       <widget class="QWidget" name="matplot_widget" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <layout class="QVBoxLayout" name="matplot_vlayout"/>
+       </widget>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="ch1_vlayout">
+        <item>
+         <widget class="QCheckBox" name="ch1_checkbox">
+          <property name="text">
+           <string>Channel 1</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="ch1_coupling_combo">
+          <item>
+           <property name="text">
+            <string>AC</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>DC</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>GND</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="ch1_measure_label">
+          <property name="text">
+           <string>Measurements</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPlainTextEdit" name="ch1_measure_textedit">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>150</width>
+            <height>200</height>
+           </size>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="ch1_vspacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="Line" name="channels_vline">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="ch2_vlayout">
+        <item>
+         <widget class="QCheckBox" name="ch2_checkbox">
+          <property name="text">
+           <string>Channel 2</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="ch2_coupling_combo">
+          <item>
+           <property name="text">
+            <string>AC</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>DC</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>GND</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="ch2_measure_label">
+          <property name="text">
+           <string>Measurements</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPlainTextEdit" name="ch2_measure_textedit">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>150</width>
+            <height>200</height>
+           </size>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="ch2_vspacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="Line" name="hline">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="cmd_query_hlayout">
+      <item>
+       <widget class="QComboBox" name="serial_combo"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="acquire_button">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Acquire</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="fft_button">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>FFT</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="longmem_checkbox">
+        <property name="text">
+         <string>Long memory</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="cmd_query_hspacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>acquire_button</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>acquireWave()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>161</x>
+     <y>584</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>792</x>
+     <y>80</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fft_button</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>calculateFFT()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>226</x>
+     <y>578</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>792</x>
+     <y>142</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ch1_coupling_combo</sender>
+   <signal>activated(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ch1_coupling_changed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>618</x>
+     <y>58</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>594</x>
+     <y>595</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ch2_coupling_combo</sender>
+   <signal>activated(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ch2_coupling_changed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>786</x>
+     <y>56</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>356</x>
+     <y>605</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ch1_checkbox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ch1_toggled()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>645</x>
+     <y>28</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>678</x>
+     <y>599</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ch2_checkbox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ch2_toggled()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>833</x>
+     <y>21</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>861</x>
+     <y>591</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>acquireWave()</slot>
+  <slot>calculateFFT()</slot>
+  <slot>ch1_toggled()</slot>
+  <slot>ch2_toggled()</slot>
+  <slot>ch1_coupling_changed()</slot>
+  <slot>ch2_coupling_changed()</slot>
+  <slot>serial_changed(QString)</slot>
+ </slots>
+</ui>
