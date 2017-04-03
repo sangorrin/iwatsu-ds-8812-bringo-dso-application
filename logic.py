@@ -23,6 +23,10 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
         self.toolbar = NavigationToolbar(self.canvas,
                 self.matplot_widget, coordinates=True)
         self.matplot_vlayout.addWidget(self.toolbar)
+        self.ch1_wave = None
+        self.ch2_wave = None
+        self.interval = None
+        self.points = None
 
         # prepare the serial port combo
         serial_list = sorted(glob.glob('/dev/ttyUSB*'), key = lambda x: int(x[11:]))
@@ -86,78 +90,94 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
         #self.cmd_reply_text.appendPlainText(cmd)
         #self.cmd_reply_text.appendPlainText(reply)
 
-    def acquireWave(self):
+    def acquireWave(self, channel):
+        self._sendCommand('%s:TRA ON' % channel)
+        self._sendCommand('WAVESRC CH%s' % channel[-1])
+        reply = self._sendCommand('DTWAVE?')
+        # ascii data comes in 0.1mv format
+        wave = [float(item)/10000.0 for item in reply.split(',')]
+        return wave
+
+    def Acquire(self, show_plot=True):
         self.statusBar.clearMessage()
-        self.statusBar.showMessage('Acquiring...')
+        if not (self.ch1_checkbox.isChecked() or self.ch2_checkbox.isChecked()):
+            self.statusBar.showMessage('Both channels are disabled')
+            return
+        else:
+            self.statusBar.showMessage('Acquiring...')
+
         if self.longmem_checkbox.isChecked():
             cmd = 'MLEN LONG'
             self._sendCommand(cmd)
-            # points = 102400
-            points = 30000
+            # TODO: it should work with points = 102400 but it takes too long (try using binary data)
+            self.points = 30000
         else:
             cmd = 'MLEN SHORT'
             self._sendCommand(cmd)
-            points = 5120
-        self._sendCommand('DTPOINTS ' + str(points))
-        print points
+            self.points = 5120
+        self._sendCommand('DTPOINTS ' + str(self.points))
 
-        self.ax1f1.clear()
-        tdiv = float(self._sendCommand('TDIV?'))
-        sample_rate = points / (tdiv * 10) # the osc has 10 divisions
-        interval = (tdiv * 10) / points
+        tdiv = float(self._sendCommand('TDIV?')) # time/div (total: 10 div)
+        self.interval = (tdiv * 10) / self.points # sample_rate = 1/interval
+        x = np.arange(0, self.interval * self.points, self.interval)
 
-        # TODO: use a common routine
+        if show_plot:
+            self.ax1f1.clear()
+            self.ax1f1.set_xlim([0, max(x)])
+
         if self.ch1_checkbox.isChecked():
-            self._sendCommand('C1:TRA ON')
-            vdiv1 = float(self._sendCommand('C1:VDIV?'))
-            self._sendCommand('WAVESRC CH1')
-            reply = self._sendCommand('DTWAVE?')
-            # ascii data comes in 0.1mv format
-            wave1 = [float(item)/10000.0 for item in reply.split(',')]
-            x = np.arange(0, interval*len(wave1), interval)
-            #self.ax1f1.set_xlim([0,max(x)])
-            #self.ax1f1.plot(x, wave1)
+            self.ch1_wave = self.acquireWave('C1')
+            if show_plot:
+                self.ax1f1.plot(x, self.ch1_wave)
 
         if self.ch2_checkbox.isChecked():
-            self._sendCommand('C2:TRA ON')
-            vdiv1 = float(self._sendCommand('C2:VDIV?'))
-            self._sendCommand('WAVESRC CH2')
-            reply = self._sendCommand('DTWAVE?')
-            # ascii data comes in 0.1mv format
-            wave2 = [float(item)/10000.0 for item in reply.split(',')]
-            x = np.arange(0, interval*len(wave2), interval)
-            #self.ax1f1.set_xlim([0,max(x)])
-            #self.ax1f1.plot(x, wave2)
+            self.ch2_wave = self.acquireWave('C2')
+            if show_plot:
+                self.ax1f1.plot(x, self.ch2_wave)
 
-        #n = len(wave1[0:63])
-        #d = 1./sample_rate
-        #fs = np.fft.rfftfreq(n, d)
-        #print fs
-        #hs = np.fft.rfft(wave1[0:63])
-        from numpy import fft
-        print 'rate: ' + str(sample_rate)
-        Fk = fft.fft(wave1)/points # Fourier coefficients (divided by n)
-        nu = fft.fftfreq(points, 1/sample_rate) # Natural frequencies
-        Fk = fft.fftshift(Fk) # Shift zero freq to center
-        nu = fft.fftshift(nu) # Shift zero freq to center
-
-        #hs = np.asanyarray(hs)
-        #fs = np.asanyarray(fs)
-        #self.ax1f1.set_xlim([0,max(fs)])
-        self.ax1f1.set_autoscaley_on(True)
-        self.ax1f1.set_autoscalex_on(True)
-
-        #i = None if high is None else find_index(high, self.fs)
-        #thinkplot.plot(self.fs[:i], self.hs[:i], **options)
-        self.ax1f1.plot(nu, np.absolute(Fk)**2) # Plot spectral power
-        #self.ax1f1.plot(fs, hs)
-        #self.ax1f1.plot(nu, np.absolute(np.real(Fk))) # Plot Cosine terms
-        self.canvas.draw()
+        if show_plot:
+            self.canvas.draw()
         self.statusBar.clearMessage()
         self.statusBar.showMessage('Acquiring... FINISHED')
 
+    def fft(self, wave):
+        Fk = np.fft.fft(wave)/self.points # Fourier coefficients (divided by n)
+        nu = np.fft.fftfreq(self.points, self.interval) # Natural frequencies
+        Fk = np.fft.fftshift(Fk) # Shift zero freq to center
+        nu = np.fft.fftshift(nu) # Shift zero freq to center
+        return Fk, nu
+
+    def rfft(self, wave):
+        Fk = np.fft.rfft(wave)/self.points
+        nu = np.fft.rfftfreq(self.points, self.interval)
+        return Fk, nu
+
     def calculateFFT(self):
-        print 'calc FFT'
+        self.statusBar.clearMessage()
+        if not (self.ch1_checkbox.isChecked() or self.ch2_checkbox.isChecked()):
+            self.statusBar.showMessage('Both channels are disabled')
+            return
+        else:
+            self.statusBar.showMessage('Calculating FFT...')
+
+        if any([not self.ch1_wave, not self.ch2_wave, not self.interval, not self.points]):
+            self.Acquire(show_plot=False)
+
+        self.ax1f1.clear()
+        if self.ch1_checkbox.isChecked():
+            Fk, nu = self.rfft(self.ch1_wave)
+            self.ax1f1.plot(nu, 20*np.log10(np.absolute(Fk))) # Plot spectral power
+        if self.ch2_checkbox.isChecked():
+            Fk, nu = self.rfft(self.ch2_wave)
+            self.ax1f1.plot(nu, 20*np.log10(np.absolute(Fk))) # Plot spectral power
+        self.canvas.draw()
+        self.statusBar.clearMessage()
+        self.statusBar.showMessage('Calculating FFT... FINISHED')
+
+    def aset(self):
+        reply = self._sendCommand('ASET')
+        self.statusBar.clearMessage()
+        self.statusBar.showMessage(reply)
 
     def ch1_toggled(self):
         if self.ch1_checkbox.isChecked():

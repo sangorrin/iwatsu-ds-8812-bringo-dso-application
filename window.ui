@@ -188,6 +188,13 @@
        <widget class="QComboBox" name="serial_combo"/>
       </item>
       <item>
+       <widget class="QPushButton" name="autoset_button">
+        <property name="text">
+         <string>Autoset</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="acquire_button">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -245,10 +252,10 @@
    <sender>acquire_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>acquireWave()</slot>
+   <slot>Acquire()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>161</x>
+     <x>252</x>
      <y>584</y>
     </hint>
     <hint type="destinationlabel">
@@ -264,7 +271,7 @@
    <slot>calculateFFT()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>226</x>
+     <x>317</x>
      <y>578</y>
     </hint>
     <hint type="destinationlabel">
@@ -337,14 +344,31 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>autoset_button</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>aset()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>128</x>
+     <y>575</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>154</x>
+     <y>593</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
-  <slot>acquireWave()</slot>
+  <slot>Acquire()</slot>
   <slot>calculateFFT()</slot>
   <slot>ch1_toggled()</slot>
   <slot>ch2_toggled()</slot>
   <slot>ch1_coupling_changed()</slot>
   <slot>ch2_coupling_changed()</slot>
   <slot>serial_changed(QString)</slot>
+  <slot>aset()</slot>
  </slots>
 </ui>
