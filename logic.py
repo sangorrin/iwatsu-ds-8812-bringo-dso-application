@@ -1,6 +1,26 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright 2017 Daniel Sangorrin
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of version 2 of the GNU General Public License as
+#   published by the Free Software Foundation.  The GNU General Public
+#   License is available online at: http://www.gnu.org/copyleft/gpl.html
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+# Debugging commands:
+# $ picocom -c --omap crcrlf -b 115200 -f h /dev/ttyUSB0
+#   DATE?
+
 import sys
 import numpy as np
 from PyQt4 import QtGui, QtCore
+import matplotlib
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas,
@@ -8,6 +28,7 @@ from matplotlib.backends.backend_qt4agg import (
 from window import Ui_MainWindow
 import serial
 import glob
+import time
 
 class Main(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -62,6 +83,7 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
                 return rv
 
     def _sendCommand(self, cmd):
+        print "command: " + cmd
         try:
             self.check_serial_port()
         except Exception as e:
@@ -78,18 +100,6 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
             reply = self.readlineCR()
         return reply.strip('\r\n')
 
-    #def sendCommand(self):
-        #cmd = self.cmd_entry.text()
-        #self._sendCommand(cmd)
-        #self.cmd_entry.clear()
-        #self.cmd_reply_text.appendPlainText(cmd)
-        #self.cmd_reply_text.appendPlainText(reply)
-
-    #def sendQuery(self, cmd):
-        #reply = self._sendCommand(cmd)
-        #self.cmd_reply_text.appendPlainText(cmd)
-        #self.cmd_reply_text.appendPlainText(reply)
-
     def acquireWave(self, channel):
         self._sendCommand('%s:TRA ON' % channel)
         self._sendCommand('WAVESRC CH%s' % channel[-1])
@@ -97,6 +107,12 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
         # ascii data comes in 0.1mv format
         wave = [float(item)/10000.0 for item in reply.split(',')]
         return wave
+
+    def measure(self, channel, mode):
+        self._sendCommand('DIRM A')
+        self._sendCommand('MSEL %s, %s' % (channel, mode))
+        time.sleep(1)
+        return self._sendCommand('MSRA?')
 
     def Acquire(self, show_plot=True):
         self.statusBar.clearMessage()
@@ -107,13 +123,11 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
             self.statusBar.showMessage('Acquiring...')
 
         if self.longmem_checkbox.isChecked():
-            cmd = 'MLEN LONG'
-            self._sendCommand(cmd)
+            self._sendCommand('MLEN LONG')
             # TODO: it should work with points = 102400 but it takes too long (try using binary data)
             self.points = 30000
         else:
-            cmd = 'MLEN SHORT'
-            self._sendCommand(cmd)
+            self._sendCommand('MLEN SHORT')
             self.points = 5120
         self._sendCommand('DTPOINTS ' + str(self.points))
 
@@ -126,14 +140,98 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
             self.ax1f1.set_xlim([0, max(x)])
 
         if self.ch1_checkbox.isChecked():
+            if self.ch1_lpfilter_checkbox.isChecked():
+                self._sendCommand('C1:BWL ON')
+            else:
+                self._sendCommand('C1:BWL OFF')
             self.ch1_wave = self.acquireWave('C1')
             if show_plot:
                 self.ax1f1.plot(x, self.ch1_wave)
+            period   = self.measure('CH1', 'PERIOD')
+            duty     = self.measure('CH1', 'DUTY')
+            vmean    = self.measure('CH1', 'VMEAN')
+            freq     = self.measure('CH1', 'FREQ')
+            vrms     = self.measure('CH1', 'VRMS')
+            vpp      = self.measure('CH1', 'P-P')
+            tr       = self.measure('CH1', 'TR')
+            tf       = self.measure('CH1', 'TF')
+            pos_pw   = self.measure('CH1', '+PW')
+            neg_pw   = self.measure('CH1', '-PW')
+            pos_peak = self.measure('CH1', '+PEAK')
+            neg_peak = self.measure('CH1', '-PEAK')
+            self.ch1_measure_textedit.clear()
+            self.ch1_measure_textedit.appendPlainText('Period: %s' % period)
+            self.ch1_measure_textedit.appendPlainText('Duty: %s' % duty)
+            self.ch1_measure_textedit.appendPlainText('Vmean: %s' % vmean)
+            self.ch1_measure_textedit.appendPlainText('Freq: %s' % freq)
+            self.ch1_measure_textedit.appendPlainText('Vrms: %s' % vrms)
+            self.ch1_measure_textedit.appendPlainText('Vpp: %s' % vpp)
+            self.ch1_measure_textedit.appendPlainText('Rise: %s' % tr)
+            self.ch1_measure_textedit.appendPlainText('Fall: %s' % tf)
+            self.ch1_measure_textedit.appendPlainText('+PW: %s' % pos_pw)
+            self.ch1_measure_textedit.appendPlainText('-PW: %s' % neg_pw)
+            self.ch1_measure_textedit.appendPlainText('+PEAK: %s' % pos_peak)
+            self.ch1_measure_textedit.appendPlainText('-PEAK: %s' % neg_peak)
+
+            #v_at_t = self._sendCommand('CURM V_AT_T')
+            #self.ch1_measure_textedit.appendPlainText('Vcursor: %s' % v_at_t)
+
+            #hcur1, hcur2 = self._sendCommand('HCUR?').split(',')
+            #vcur1, vcur2 = self._sendCommand('VCUR?').split(',')
+
+
+#  <-- low pass filter
+# PROBE mode value (mode: AUTO, MANUAL value: 1,10,100,1000 (1:1 10:1 ...)
+# AVGCNT 2..256 (requires AVERAGE mode <--
+
+#LEVL 10~90
+    #Used by: FREQ, PERIOD, +PW, -PW, and DUTY
+#MCND base, 11-90, 10-89
+    #base: T-B or P-P
+    #Used by: TR and TF
+#SKLV ch1-level>, <ch1_edge>, <ch2_level>, <ch2_edge> (RISE or FALL)
+    #Used by: SKEW
 
         if self.ch2_checkbox.isChecked():
+            if self.ch2_lpfilter_checkbox.isChecked():
+                self._sendCommand('C2:BWL ON')
+            else:
+                self._sendCommand('C2:BWL OFF')
             self.ch2_wave = self.acquireWave('C2')
             if show_plot:
                 self.ax1f1.plot(x, self.ch2_wave)
+            period   = self.measure('CH2', 'PERIOD')
+            duty     = self.measure('CH2', 'DUTY')
+            vmean    = self.measure('CH2', 'VMEAN')
+            freq     = self.measure('CH2', 'FREQ')
+            vrms     = self.measure('CH2', 'VRMS')
+            vpp      = self.measure('CH2', 'P-P')
+            tr       = self.measure('CH2', 'TR')
+            tf       = self.measure('CH2', 'TF')
+            pos_pw   = self.measure('CH2', '+PW')
+            neg_pw   = self.measure('CH2', '-PW')
+            pos_peak = self.measure('CH2', '+PEAK')
+            neg_peak = self.measure('CH2', '-PEAK')
+            self.ch2_measure_textedit.clear()
+            self.ch2_measure_textedit.appendPlainText('Period: %s' % period)
+            self.ch2_measure_textedit.appendPlainText('Duty: %s' % duty)
+            self.ch2_measure_textedit.appendPlainText('Vmean: %s' % vmean)
+            self.ch2_measure_textedit.appendPlainText('Freq: %s' % freq)
+            self.ch2_measure_textedit.appendPlainText('Vrms: %s' % vrms)
+            self.ch2_measure_textedit.appendPlainText('Vpp: %s' % vpp)
+            self.ch2_measure_textedit.appendPlainText('Rise: %s' % tr)
+            self.ch2_measure_textedit.appendPlainText('Fall: %s' % tf)
+            self.ch2_measure_textedit.appendPlainText('+PW: %s' % pos_pw)
+            self.ch2_measure_textedit.appendPlainText('-PW: %s' % neg_pw)
+            self.ch2_measure_textedit.appendPlainText('+PEAK: %s' % pos_peak)
+            self.ch2_measure_textedit.appendPlainText('-PEAK: %s' % neg_peak)
+
+        if self.ch1_checkbox.isChecked() and self.ch2_checkbox.isChecked():
+            skew = self.measure('CH1', 'SKEW')
+            self.ch1_measure_textedit.appendPlainText('SKEW: %s' % skew)
+            # Note: should be equal
+            skew = self.measure('CH2', 'SKEW')
+            self.ch2_measure_textedit.appendPlainText('SKEW: %s' % skew)
 
         if show_plot:
             self.canvas.draw()
@@ -164,6 +262,10 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
             self.Acquire(show_plot=False)
 
         self.ax1f1.clear()
+        #self.ax1f1.set_xscale('log')
+        #self.ax1f1.set_xticks([100, 1000, 10000, 100000, 1000000, 10000000])
+        #self.ax1f1.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+
         if self.ch1_checkbox.isChecked():
             Fk, nu = self.rfft(self.ch1_wave)
             self.ax1f1.plot(nu, 20*np.log10(np.absolute(Fk))) # Plot spectral power
@@ -179,15 +281,13 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
         self.statusBar.clearMessage()
         self.statusBar.showMessage(reply)
 
-    def ch1_toggled(self):
+    def ch_toggled(self):
         if self.ch1_checkbox.isChecked():
             print 'ch1 enabled'
             reply = self._sendCommand('C1:TRA ON')
         else:
             print 'ch1 disabled'
             reply = self._sendCommand('C1:TRA OFF')
-
-    def ch2_toggled(self):
         if self.ch2_checkbox.isChecked():
             print 'ch2 enabled'
             reply = self._sendCommand('C2:TRA ON')
@@ -195,13 +295,23 @@ class Main(QtGui.QMainWindow, Ui_MainWindow):
             print 'ch2 disabled'
             reply = self._sendCommand('C2:TRA OFF')
 
-    def ch1_coupling_changed(self):
+    def ch_coupling_changed(self):
         print 'ch1 coupling: ' + str(self.ch1_coupling_combo.currentText())
         self._sendCommand('C1:CPL ' + str(self.ch1_coupling_combo.currentText()))
-
-    def ch2_coupling_changed(self):
         print 'ch2 coupling: ' + str(self.ch2_coupling_combo.currentText())
         self._sendCommand('C2:CPL ' + str(self.ch2_coupling_combo.currentText()))
+
+    def persist_toggled(self):
+        if self.persist_checkbox.isChecked():
+            self._sendCommand('PERS ON')
+        else:
+            self._sendCommand('PERS OFF')
+
+    def equiv_toggled(self):
+        if self.equiv_checkbox.isChecked():
+            self._sendCommand('EQU ON')
+        else:
+            self._sendCommand('EQU OFF')
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)

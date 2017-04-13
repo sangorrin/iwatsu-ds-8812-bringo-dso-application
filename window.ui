@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>921</width>
-    <height>621</height>
+    <height>622</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>IWATSU Digital Oscilloscope DS-8812 BRINGO</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -71,14 +71,27 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="minimumSize">
+           <size>
+            <width>150</width>
+            <height>250</height>
+           </size>
+          </property>
           <property name="maximumSize">
            <size>
             <width>150</width>
-            <height>200</height>
+            <height>5000</height>
            </size>
           </property>
           <property name="readOnly">
            <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="ch1_lpfilter_checkbox">
+          <property name="text">
+           <string>Low-pass filter</string>
           </property>
          </widget>
         </item>
@@ -147,14 +160,27 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="minimumSize">
+           <size>
+            <width>150</width>
+            <height>250</height>
+           </size>
+          </property>
           <property name="maximumSize">
            <size>
             <width>150</width>
-            <height>200</height>
+            <height>250</height>
            </size>
           </property>
           <property name="readOnly">
            <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="ch2_lpfilter_checkbox">
+          <property name="text">
+           <string>Low-pass filter</string>
           </property>
          </widget>
         </item>
@@ -228,6 +254,20 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="persist_checkbox">
+        <property name="text">
+         <string>Persistence</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="equiv_checkbox">
+        <property name="text">
+         <string>Equiv. sampling</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="cmd_query_hspacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -281,70 +321,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>ch1_coupling_combo</sender>
-   <signal>activated(QString)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>ch1_coupling_changed()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>618</x>
-     <y>58</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>594</x>
-     <y>595</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>ch2_coupling_combo</sender>
-   <signal>activated(QString)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>ch2_coupling_changed()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>786</x>
-     <y>56</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>356</x>
-     <y>605</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>ch1_checkbox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>ch1_toggled()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>645</x>
-     <y>28</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>678</x>
-     <y>599</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>ch2_checkbox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>ch2_toggled()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>833</x>
-     <y>21</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>861</x>
-     <y>591</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>autoset_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
@@ -360,15 +336,112 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>ch1_checkbox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ch_toggled()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>623</x>
+     <y>25</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>577</x>
+     <y>581</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ch2_checkbox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ch_toggled()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>770</x>
+     <y>25</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>522</x>
+     <y>569</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ch1_coupling_combo</sender>
+   <signal>activated(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ch_coupling_changed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>671</x>
+     <y>52</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>640</x>
+     <y>578</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ch2_coupling_combo</sender>
+   <signal>activated(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ch_coupling_changed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>821</x>
+     <y>63</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>675</x>
+     <y>590</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>persist_checkbox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>persist_toggled()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>539</x>
+     <y>567</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>875</x>
+     <y>572</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>equiv_checkbox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>equiv_toggled()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>723</x>
+     <y>573</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>843</x>
+     <y>584</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>Acquire()</slot>
   <slot>calculateFFT()</slot>
-  <slot>ch1_toggled()</slot>
-  <slot>ch2_toggled()</slot>
-  <slot>ch1_coupling_changed()</slot>
-  <slot>ch2_coupling_changed()</slot>
+  <slot>ch_toggled()</slot>
+  <slot>ch_coupling_changed()</slot>
   <slot>serial_changed(QString)</slot>
   <slot>aset()</slot>
+  <slot>ch_lpfilter_toggled()</slot>
+  <slot>persist_toggled()</slot>
+  <slot>equiv_toggled()</slot>
  </slots>
 </ui>
